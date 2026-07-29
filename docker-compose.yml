@@ -1,0 +1,140 @@
+services:
+  dagster_postgresql:
+    image: postgres:15
+    container_name: dagster_postgresql
+    environment:
+      POSTGRES_USER: postgres_user
+      POSTGRES_PASSWORD: postgres_password
+      POSTGRES_DB: postgres_db
+    networks:
+      - dagster_network
+    volumes:
+      - dagster_postgres_data:/var/lib/postgresql/data
+
+  warehouse_postgresql:
+    image: postgres:15
+    container_name: warehouse_postgresql
+    environment:
+      POSTGRES_USER: warehouse_user
+      POSTGRES_PASSWORD: warehouse_password
+      POSTGRES_DB: warehouse
+    ports:
+      - "5433:5432"
+    networks:
+      - dagster_network
+    volumes:
+      - warehouse_postgres_data:/var/lib/postgresql/data
+
+  pipeline_products:
+    build: ./pipeline_products
+    container_name: pipeline_products
+    environment:
+      WAREHOUSE_HOST: warehouse_postgresql
+      WAREHOUSE_PORT: "5432"
+      WAREHOUSE_USER: warehouse_user
+      WAREHOUSE_PASSWORD: warehouse_password
+      WAREHOUSE_DB: warehouse
+      DAGSTER_POSTGRES_USER: postgres_user
+      DAGSTER_POSTGRES_PASSWORD: postgres_password
+      DAGSTER_POSTGRES_DB: postgres_db
+    networks:
+      - dagster_network
+    depends_on:
+      - warehouse_postgresql
+
+  pipeline_fx:
+    build: ./pipeline_fx
+    container_name: pipeline_fx
+    environment:
+      WAREHOUSE_HOST: warehouse_postgresql
+      WAREHOUSE_PORT: "5432"
+      WAREHOUSE_USER: warehouse_user
+      WAREHOUSE_PASSWORD: warehouse_password
+      WAREHOUSE_DB: warehouse
+      DAGSTER_POSTGRES_USER: postgres_user
+      DAGSTER_POSTGRES_PASSWORD: postgres_password
+      DAGSTER_POSTGRES_DB: postgres_db
+    networks:
+      - dagster_network
+    depends_on:
+      - warehouse_postgresql
+
+  pipeline_ml:
+    build: ./pipeline_ml
+    container_name: pipeline_ml
+    environment:
+      WAREHOUSE_HOST: warehouse_postgresql
+      WAREHOUSE_PORT: "5432"
+      WAREHOUSE_USER: warehouse_user
+      WAREHOUSE_PASSWORD: warehouse_password
+      WAREHOUSE_DB: warehouse
+      DAGSTER_POSTGRES_USER: postgres_user
+      DAGSTER_POSTGRES_PASSWORD: postgres_password
+      DAGSTER_POSTGRES_DB: postgres_db
+    networks:
+      - dagster_network
+    depends_on:
+      - warehouse_postgresql
+
+  pipeline_analytics:
+    build: ./pipeline_analytics
+    container_name: pipeline_analytics
+    environment:
+      WAREHOUSE_HOST: warehouse_postgresql
+      WAREHOUSE_PORT: "5432"
+      WAREHOUSE_USER: warehouse_user
+      WAREHOUSE_PASSWORD: warehouse_password
+      WAREHOUSE_DB: warehouse
+      DAGSTER_POSTGRES_USER: postgres_user
+      DAGSTER_POSTGRES_PASSWORD: postgres_password
+      DAGSTER_POSTGRES_DB: postgres_db
+    networks:
+      - dagster_network
+    depends_on:
+      - warehouse_postgresql
+      # reads tables written by these two, so it should start after them
+      - pipeline_fx
+      - pipeline_ml
+
+  dagster_webserver:
+    build: .
+    container_name: dagster_webserver
+    command: ["dagster-webserver", "-h", "0.0.0.0", "-p", "3000"]
+    ports:
+      - "3000:3000"
+    environment:
+      DAGSTER_POSTGRES_USER: postgres_user
+      DAGSTER_POSTGRES_PASSWORD: postgres_password
+      DAGSTER_POSTGRES_DB: postgres_db
+    networks:
+      - dagster_network
+    depends_on:
+      - dagster_postgresql
+      - pipeline_products
+      - pipeline_fx
+      - pipeline_ml
+      - pipeline_analytics
+
+  dagster_daemon:
+    build: .
+    container_name: dagster_daemon
+    command: ["dagster-daemon", "run"]
+    environment:
+      DAGSTER_POSTGRES_USER: postgres_user
+      DAGSTER_POSTGRES_PASSWORD: postgres_password
+      DAGSTER_POSTGRES_DB: postgres_db
+    networks:
+      - dagster_network
+    depends_on:
+      - dagster_postgresql
+      - pipeline_products
+      - pipeline_fx
+      - pipeline_ml
+
+networks:
+  dagster_network:
+    driver: bridge
+
+volumes:
+  dagster_postgres_data:
+  warehouse_postgres_data:

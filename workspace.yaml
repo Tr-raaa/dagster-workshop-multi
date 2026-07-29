@@ -1,0 +1,17 @@
+load_from:
+  - grpc_server:
+      host: pipeline_products
+      port: 4000
+      location_name: "pipeline_products"
+  - grpc_server:
+      host: pipeline_fx
+      port: 4001
+      location_name: "pipeline_fx"
+  - grpc_server:
+      host: pipeline_ml
+      port: 4002
+      location_name: "pipeline_ml"
+  - grpc_server:
+      host: pipeline_analytics
+      port: 4003
+      location_name: "pipeline_analytics"
