@@ -42,13 +42,13 @@ gate, and a predictions asset.
 
 ## 3. Self-check before you call it done
 
-- [ ] Your new pipeline builds and appears as its own code location under
+- [√] Your new pipeline builds and appears as its own code location under
       Deployment > Code Locations
-- [ ] "Materialize all" runs it end-to-end with no errors
-- [ ] It defines at least one `@asset_check` that passes
-- [ ] `pytest` passes for your new pipeline's `tests/`
-- [ ] It's wired into `docker-compose.yml` and `workspace.yaml`
-- [ ] Your fork's README documents it — copy in
+- [√] "Materialize all" runs it end-to-end with no errors
+- [√] It defines at least one `@asset_check` that passes
+- [√] `pytest` passes for your new pipeline's `tests/`
+- [√] It's wired into `docker-compose.yml` and `workspace.yaml`
+- [√] Your fork's README documents it — copy in
       [portfolio-readme-template.md](portfolio-readme-template.md) and fill
       it in
 
